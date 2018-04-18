@@ -1,0 +1,149 @@
+
+
+
+
+
+
+统计类操作
+1.1 统计几行几列
+> dim(RF_predict_compete)
+[1] 207035      2
+1.2 列名与类型
+colnames(sy_train_set)
+ [1] "NSRDZDAH"              "NORMAL_SL_FLAG_3M"     "NSRMC"	...
+sapply(sy_train_set,class)
+             NSRDZDAH     NORMAL_SL_FLAG_3M                 NSRMC 
+          "character"              "factor"           "character"
+1.3 summary(sy_train_set)
+
+
+第一部分 简单操作
+2.1 create
+ pid=c(1:4)
+ age=c(18:21)
+ pdata=data.frame(pid,age)
+ pdata
+  pid age
+1   1  18
+2   2  19
+3   3  20
+4   4  21
+
+2.3 取单个元素
+> pdata[1,2]
+[1] 18
+> pdata[3,2]
+[1] 20
+
+2.4 取一行或一列
+> pdata[2,]--返回data.frame
+  pid age
+2   2  19
+> pdata[,2]--返回vector
+[1] 18 19 20 21
+其中p[2]等同于p[2,]。
+> class(pdata[1,])--返回data.frame
+[1] "data.frame"
+> class(pdata[,1])--返回vector
+[1] "integer"
+
+2.5 还有一个[[]]和$的操作符，见下面。
+
+2.6 当然pdata['age']是可以的，不用赘述，想想它的类型是什么。
+
+第二部分 类SQL
+复杂的sql求助于library(sqldf)，简单的sql可以用subset\merge\aggregate装x。
+一.类似select where
+> student<-data.frame(ID=c(11,12,13),Name=c('Devin','Edward','Wenli'),Gender=c('M','M','F'),Birthdate=c('1984-12-29','1983-5-6','1986-8-8'));
+> student
+  ID   Name Gender  Birthdate
+1 11  Devin      M 1984-12-29
+2 12 Edward      M   1983-5-6
+3 13  Wenli      F   1986-8-8
+> subset(student,Gender=='M' & ID<13, select=c('Name','Gender'))
+    Name Gender
+1  Devin      M
+2 Edward      M
+
+二.类似join
+> score<-data.frame(SID=c(11,11,12,12,13),Course=c('Math','English','Math','Chinese','Math'),Score=c(90,80,80,95,96));
+> score
+  SID  Course Score
+1  11    Math    90
+2  11 English    80
+3  12    Math    80
+4  12 Chinese    95
+5  13    Math    96
+stu_sco=merge(student,score,by.x="ID",by.y="SID")
+> stu_sco
+  ID   Name Gender  Birthdate  Course Score
+1 11  Devin      M 1984-12-29    Math    90
+2 11  Devin      M 1984-12-29 English    80
+3 12 Edward      M   1983-5-6    Math    80
+4 12 Edward      M   1983-5-6 Chinese    95
+5 13  Wenli      F   1986-8-8    Math    96
+
+三.类似groupby
+aggregate(stu_sco[,6],by=list(stu_sco$ID,stu_sco$Name),FUN=sum)
+  Group.1 Group.2   x
+1      11   Devin 170
+2      12  Edward 175
+3      13   Wenli  96
+结果有些难看，可以这样
+> with(stu_sco,{aggregate(Score~ID+Name,FUN=sum)})
+  ID   Name Score
+1 11  Devin   170
+2 12 Edward   175
+3 13  Wenli    96
+公式（formula）是一种特殊的R数据对象，公式 cbind(mpg,hp) ~ cyl+gear 表示使用 cyl 和 gear 的因子组合对 cbind(mpg,hp) 数据进行操作。
+
+
+猜一下下面两个的不同：
+> with(stu_sco,{aggregate(ID+Score~ID+Name,FUN=sum)})
+  ID   Name ID + Score
+1 11  Devin        192
+2 12 Edward        199
+3 13  Wenli        109
+> with(stu_sco,{aggregate(cbind(ID,Score)~ID+Name,FUN=sum)})
+  ID   Name ID Score
+1 11  Devin 22   170
+2 12 Edward 24   175
+3 13  Wenli 13    96
+
+四、集合交并差
+setdiff(A,B)
+intersect(A,B)
+union(A,B)
+
+
+补充:
+rbind，紧接着上面是cbind
+student2<-data.frame(ID=c(21,22),Name=c("Yan","Peng"),Gender=c("F","M"),Birthdate=c("1982-2-9","1983-1-16"))
+> rbind(student,student2)
+  ID   Name Gender  Birthdate
+1 11  Devin      M 1984-12-29
+2 12 Edward      M   1983-5-6
+3 13  Wenli      F   1986-8-8
+4 21    Yan      F   1982-2-9
+5 22   Peng      M  1983-1-16
+
+
+
+
+
+
+
+
+p
+
+
+a=2
+b=a
+print(id(a),id(b))
+a=3
+print(id(a),id(b))
+a=1+1
+print(id(a),id(b))
+1712087232 1712087232
+1712087264 1712087232
+1712087232 1712087232

@@ -1,0 +1,18 @@
+第一 输出
+1.类似c语言printf
+sprintf("whats the %d",9)
+[1] "whats the 9"
+2.类似c++的cout
+sy_coltype=1
+cat("hha",sy_coltype)
+3.标准输出，标准输入，标准错误
+在R中，stdin() 对应标准输入流 ， stdout() 对应标准输出流，stderr() 对应标准错误流
+a <- read.table(stdin())
+write("I am stdout", stdout())
+write("I am stderr", stderr())
+4.建议使用cat
+cat(... , file = "", sep = " ", fill = FALSE, labels = NULL,
+    append = FALSE)
+file A connection, or a character string naming the file to print to. If "" (the default), cat prints to the standard output connection, the console unless redirected by sink.
+sep	
+a character vector of strings to append after each element.

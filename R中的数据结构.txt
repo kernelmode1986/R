@@ -1,0 +1,203 @@
+R里有vector、matrix、array(数组)和dataframe，还有一个什么都能存储的list。
+
+
+第一个问题
+> x=matrix(1:10,nrow=2)
+> y=matrix(1:10,nrow=2,byrow=TRUE);
+> x
+     [,1] [,2] [,3] [,4] [,5]
+[1,]    1    3    5    7    9
+[2,]    2    4    6    8   10
+> y
+     [,1] [,2] [,3] [,4] [,5]
+[1,]    1    2    3    4    5
+[2,]    6    7    8    9   10
+> x[2]
+[1] 2
+> x[3]
+[1] 3
+> x[6]
+[1] 6
+> y[6]
+[1] 8
+结论:
+1.不管x[6]，还是y[6]，都是按列取的，按列取是R的特点。
+2.y=matrix(1:10,nrow=2,byrow=TRUE)，只是按行存。
+
+
+第二个问题
+
+1.matrix or array
+1.1 create:
+> d1=c("A1","A2")
+> d2=c("B1","b2","b3")
+> d3=c("c1","c2","c3","c4")
+> z=array(1:24,c(2,3,4),dimnames=list(d1,d2,d3))
+> z
+, , c1
+
+   B1 b2 b3
+A1  1  3  5
+A2  2  4  6
+
+, , c2
+
+   B1 b2 b3
+A1  7  9 11
+A2  8 10 12
+
+, , c3
+
+   B1 b2 b3
+A1 13 15 17
+A2 14 16 18
+
+, , c4
+
+   B1 b2 b3
+A1 19 21 23
+A2 20 22 24
+1.2:use
+> z[3]
+[1] 3
+> z[10]
+[1] 10
+> z[1,2]
+Error in z[1, 2] : 量度数目不对
+> z[1,2,3]
+[1] 15
+> z[1,2,]
+c1 c2 c3 c4 
+ 3  9 15 21 
+
+
+
+2.dataframe
+2.1 create
+> pid=c(1:4)
+> age=c(18:21)
+> pdata=data.frame(pid,age)
+> pdata
+  pid age
+1   1  18
+2   2  19
+3   3  20
+4   4  21
+
+2.3 取单个元素
+> pdata[1,2]
+[1] 18
+> pdata[3,2]
+[1] 20
+
+2.4 取一行或一列
+> pdata[2,]--返回data.frame
+  pid age
+2   2  19
+> pdata[,2]--返回vector
+[1] 18 19 20 21
+其中p[2]等同于p[2,]。
+> class(pdata[1,])--返回data.frame
+[1] "data.frame"
+> class(pdata[,1])--返回vector
+[1] "integer"
+
+2.5 还有一个[[]]和$的操作符，见下面。
+
+2.6 当然pdata['age']是可以的，不用赘述，想想它的类型是什么。
+
+结论:
+1.matrix(array)与dataframe的行为表现不同，matrix或array，很多时候表现了一维数组的特征，上面的z[1,2,3]，其实是z[15]。注意z[1,2]或者在z[1]这样访问时错误的，必须使用z[1,2,]或者z[1,,]。而dataframe就表现出二维表的特征了，pdata[2]就是第二列，注意pdata[2]和pdata[,2]的不同。
+关于z[1,2,3]怎么对应到z[15]上，这个，z=array(1:24,c(2,3,4),dimnames=list(d1,d2,d3))，其实是4个(2,3)的数组，那么z[1,2,3]=z[(3-1)*3*2+(2-1)*3+(1-1)*2]
+
+
+
+第三个问题 $ [] and [[]]
+> class(meta$model)
+[1] "character"
+> class(meta['model'])
+[1] "data.frame"
+> class(meta[['model']])
+[1] "character"
+这个是vector或者array里面的元素的类型，如：
+> a=c(1,2,3)
+> class(a)
+[1] "numeric"
+
+
+这样是对的
+> base_meta=meta[meta$model %in% c('base','obj'),]
+这样是不对的
+> base_meta=meta[meta['model'] %in% c('base','obj'),]
+说明：> meta['model'] %in% c('base','obj')
+[1] FALSE
+因为meta['model']是一个data.frame，不是一个数组，没有广播的性质。
+
+布尔数组
+> class(meta[meta['default']=='mean'])
+[1] "character"
+> class(meta[meta['default']=='mean',])
+[1] "data.frame"
+
+
+
+第四个问题 str_trim
+> class(base_meta)
+[1] "data.frame"
+> class(str_trim(base_meta))
+[1] "character"
+
+
+
+
+第五个问题 关于name
+named vector，vector是可以有name的，如果为na的话，则不显示。
+
+qtl_lgodds_sale=quantile(logodds_predict_sale,c(0.99,0.95))
+
+qtl_lgodds_sale
+ 99%         95%        
+999.0000000   4.8202816 
+  
+qtl_lgodds_sale["95%"]
+    95% 
+4.8202816
+
+names(qtl_lgodds_sale)
+[1] "99%" "95%" 
+
+> aa=c(3,2,4,1)
+> names(aa)
+NULL
+
+> bb=1
+> names(bb)
+NULL
+> names(1)
+NULL
+> names(bb)<-"haha"
+> bb
+haha 
+   1 
+
+
+
+
+
+第六个问题
+> b=array(1:3)
+> b
+[1] 1 2 3
+> b[1:2]=4
+> b
+[1] 4 4 3
+> 
+> 
+> 
+> b=array(1:3)
+> c=b[1:2]
+> c=4
+> b
+[1] 1 2 3
+> c
+[1] 4
